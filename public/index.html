@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PsychAI — Sistema de Evaluación Psicológica</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --surface2: #1c2333;
+        --border: #2a3441;
+        --accent: #3fb950;
+        --accent-soft: rgba(63, 185, 80, 0.12);
+        --warn: #f0a500;
+        --warn-soft: rgba(240, 165, 0, 0.12);
+        --danger: #f85149;
+        --danger-soft: rgba(248, 81, 73, 0.12);
+        --text: #e6edf3;
+        --text-muted: #7d8590;
+        --text-dim: #484f58;
+        --radius: 12px;
+        --radius-sm: 8px;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 15px;
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.4;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(13, 17, 23, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 2rem;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #3fb950, #1a7f37);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+      .logo-text {
+        font-family: "DM Serif Display", serif;
+        font-size: 1.3rem;
+        letter-spacing: -0.02em;
+      }
+      .logo-text span {
+        color: var(--accent);
+      }
+      .header-badge {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        padding: 4px 10px;
+        border-radius: 20px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 2.5rem 2rem;
+        position: relative;
+        z-index: 1;
+      }
+      .section-title {
+        font-family: "DM Serif Display", serif;
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+      }
+      .section-sub {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 1.75rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+      @media (max-width: 700px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        transition: border-color 0.2s;
+      }
+      .card:hover {
+        border-color: #3a4555;
+      }
+      .card-full {
+        grid-column: 1/-1;
+      }
+      .card-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .card-title::before {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        letter-spacing: 0.03em;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        padding: 10px 14px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        outline: none;
+        -webkit-appearance: none;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+      input::placeholder,
+      textarea::placeholder {
+        color: var(--text-dim);
+      }
+      select option {
+        background: var(--surface2);
+      }
+      textarea {
+        resize: vertical;
+        min-height: 180px;
+        line-height: 1.7;
+      }
+      .field {
+        margin-bottom: 1rem;
+      }
+      .field:last-child {
+        margin-bottom: 0;
+      }
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+      .btn-analyze {
+        width: 100%;
+        padding: 14px 24px;
+        background: var(--accent);
+        color: #0d1117;
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        letter-spacing: 0.02em;
+        margin-top: 1.25rem;
+      }
+      .btn-analyze:hover:not(:disabled) {
+        background: #4fc861;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(63, 185, 80, 0.3);
+      }
+      .btn-analyze:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .btn-clear {
+        width: 100%;
+        padding: 10px 24px;
+        background: transparent;
+        color: var(--text-muted);
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 8px;
+      }
+      .btn-clear:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+      #resultado-section {
+        display: none;
+      }
+      .result-title {
+        font-family: "DM Serif Display", serif;
+        font-size: 1.1rem;
+        margin-bottom: 1.25rem;
+      }
+      .result-body {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 1.25rem;
+        font-size: 14px;
+        line-height: 1.8;
+        color: var(--text);
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 520px;
+        overflow-y: auto;
+      }
+      .result-body::-webkit-scrollbar {
+        width: 6px;
+      }
+      .result-body::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .result-body::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+      .disclaimer {
+        display: flex;
+        gap: 10px;
+        background: var(--warn-soft);
+        border: 1px solid rgba(240, 165, 0, 0.25);
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        margin-top: 1rem;
+        font-size: 12px;
+        color: var(--warn);
+        line-height: 1.5;
+      }
+      .disclaimer-icon {
+        font-size: 15px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .loading-state {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        gap: 1rem;
+      }
+      .spinner {
+        width: 36px;
+        height: 36px;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .loading-text {
+        font-size: 13px;
+        color: var(--text-muted);
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.5;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      .error-box {
+        background: var(--danger-soft);
+        border: 1px solid rgba(248, 81, 73, 0.3);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        font-size: 13px;
+        color: var(--danger);
+        margin-top: 1rem;
+        display: none;
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .fade-in {
+        animation: fadeUp 0.35s ease forwards;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🧠</div>
+        <span class="logo-text">Psych<span>AI</span></span>
+      </div>
+      <span class="header-badge">Prototipo Académico</span>
+    </header>
+
+    <div class="container">
+      <p class="section-title">Evaluación Psicológica Asistida</p>
+      <p class="section-sub">
+        Ingresa los datos del paciente y el resumen clínico para obtener un
+        análisis orientativo.
+      </p>
+
+      <div class="grid">
+        <!-- DATOS PACIENTE -->
+        <div class="card">
+          <div class="card-title">Datos del paciente</div>
+          <div class="field-row">
+            <div class="field">
+              <label>Nombre</label>
+              <input type="text" id="nombre" placeholder="Ej: Juan Pérez" />
+            </div>
+            <div class="field">
+              <label>Edad</label>
+              <input
+                type="number"
+                id="edad"
+                placeholder="Ej: 34"
+                min="1"
+                max="120"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label>Género</label>
+            <select id="genero">
+              <option value="">Seleccionar...</option>
+              <option>Masculino</option>
+              <option>Femenino</option>
+              <option>No binario</option>
+              <option>Prefiere no decir</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Motivo de consulta</label>
+            <input
+              type="text"
+              id="motivo"
+              placeholder="Ej: Tristeza persistente, insomnio"
+            />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label
+                >Puntaje PHQ-9
+                <span style="color: var(--text-dim)">(0–27)</span></label
+              >
+              <input
+                type="number"
+                id="phq9"
+                placeholder="Ej: 14"
+                min="0"
+                max="27"
+              />
+            </div>
+            <div class="field">
+              <label
+                >Puntaje GAD-7
+                <span style="color: var(--text-dim)">(0–21)</span></label
+              >
+              <input
+                type="number"
+                id="gad7"
+                placeholder="Ej: 11"
+                min="0"
+                max="21"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- RESUMEN -->
+        <div class="card" style="display: flex; flex-direction: column">
+          <div class="card-title">Resumen de gestión clínica</div>
+          <div class="field" style="flex: 1">
+            <label>Descripción del caso</label>
+            <textarea
+              id="resumen"
+              placeholder="Describa los síntomas, antecedentes, comportamiento y contexto del paciente..."
+            ></textarea>
+          </div>
+          <button class="btn-analyze" id="btnAnalizar" onclick="analizar()">
+            <span>⚡</span>
+            <span id="btnText">Analizar con IA</span>
+          </button>
+          <button class="btn-clear" onclick="limpiar()">
+            🗑 Limpiar formulario
+          </button>
+          <div class="error-box" id="errorBox"></div>
+        </div>
+
+        <!-- RESULTADO -->
+        <div class="card card-full fade-in" id="resultado-section">
+          <div class="loading-state" id="loadingState">
+            <div class="spinner"></div>
+            <p class="loading-text">Procesando análisis clínico...</p>
+          </div>
+          <div id="resultContent" style="display: none">
+            <p class="result-title">Reporte de Evaluación</p>
+            <div class="result-body" id="resultText"></div>
+            <div class="disclaimer">
+              <span class="disclaimer-icon">⚠️</span>
+              <span
+                >Este resultado es <strong>orientativo</strong> y no reemplaza
+                el diagnóstico clínico de un profesional de la salud mental
+                certificado.</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function limpiar() {
+        [
+          "nombre",
+          "edad",
+          "genero",
+          "motivo",
+          "phq9",
+          "gad7",
+          "resumen",
+        ].forEach((id) => {
+          const el = document.getElementById(id);
+          el.value = el.tagName === "SELECT" ? "" : "";
+        });
+        document.getElementById("errorBox").style.display = "none";
+        document.getElementById("resultado-section").style.display = "none";
+        document.getElementById("resultContent").style.display = "none";
+      }
+
+      async function analizar() {
+        const nombre = document.getElementById("nombre").value.trim();
+        const edad = document.getElementById("edad").value.trim();
+        const genero = document.getElementById("genero").value;
+        const motivo = document.getElementById("motivo").value.trim();
+        const phq9 = document.getElementById("phq9").value.trim();
+        const gad7 = document.getElementById("gad7").value.trim();
+        const resumen = document.getElementById("resumen").value.trim();
+
+        document.getElementById("errorBox").style.display = "none";
+        if (!resumen) {
+          showError("El resumen clínico es obligatorio para el análisis.");
+          return;
+        }
+
+        let mensaje = `EVALUACIÓN PSICOLÓGICA\n\n`;
+        if (nombre) mensaje += `Paciente: ${nombre}`;
+        if (edad) mensaje += `, ${edad} años`;
+        if (genero) mensaje += `, ${genero}`;
+        mensaje += `\n`;
+        if (motivo) mensaje += `Motivo de consulta: ${motivo}\n`;
+        if (phq9) mensaje += `Puntaje PHQ-9: ${phq9}/27\n`;
+        if (gad7) mensaje += `Puntaje GAD-7: ${gad7}/21\n`;
+        mensaje += `\nResumen clínico:\n${resumen}`;
+
+        const btn = document.getElementById("btnAnalizar");
+        btn.disabled = true;
+        document.getElementById("btnText").textContent = "Analizando...";
+
+        const seccion = document.getElementById("resultado-section");
+        seccion.style.display = "block";
+        document.getElementById("loadingState").style.display = "flex";
+        document.getElementById("resultContent").style.display = "none";
+        seccion.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        try {
+          const response = await fetch("/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: mensaje, chatInput: mensaje }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              data.error || `Error del servidor: ${response.status}`,
+            );
+          }
+
+          const textoRespuesta =
+            data.output ||
+            data.text ||
+            data.response ||
+            data.message ||
+            (Array.isArray(data) &&
+              (data[0]?.output || data[0]?.text || data[0]?.message)) ||
+            JSON.stringify(data, null, 2);
+
+          document.getElementById("resultText").textContent = textoRespuesta;
+          document.getElementById("loadingState").style.display = "none";
+          document.getElementById("resultContent").style.display = "block";
+        } catch (err) {
+          document.getElementById("loadingState").style.display = "none";
+          seccion.style.display = "none";
+          showError(err.message);
+        } finally {
+          btn.disabled = false;
+          document.getElementById("btnText").textContent = "Analizar con IA";
+        }
+      }
+
+      function showError(msg) {
+        const box = document.getElementById("errorBox");
+        box.textContent = "⚠️ " + msg;
+        box.style.display = "block";
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: psychai
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: WEBHOOK_URL
+        sync: false          # Render te pedirá el valor en el dashboard (no se sube al repo)
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true

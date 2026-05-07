@@ -1,0 +1,17 @@
+{
+  "name": "psychai",
+  "version": "1.0.0",
+  "description": "Sistema de evaluación psicológica asistida por IA",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --env-file=.env --watch server/index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
