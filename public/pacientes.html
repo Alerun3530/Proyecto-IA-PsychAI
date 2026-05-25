@@ -39,6 +39,7 @@
             <thead>
               <tr>
                 <th>Código</th>
+                <th>Nombre</th>
                 <th>Edad</th>
                 <th>Género</th>
                 <th>Registrado</th>
@@ -116,6 +117,7 @@
       tbody.innerHTML = data.map(p => `
         <tr class="tr-clickable" onclick="irASesiones('${p.id}', '${p.nombre_anonimo}')">
           <td><span class="patient-code">${p.nombre_anonimo}</span></td>
+          <td>${p.nombre_real}</td>
           <td>${p.edad ?? '—'}</td>
           <td>${p.genero ?? '—'}</td>
           <td class="text-muted">${new Date(p.created_at).toLocaleDateString('es-ES')}</td>
