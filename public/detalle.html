@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PsychAI — Detalle de Sesión</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <style>
+    .dato-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+    .dato-valor { font-size: 14px; color: var(--text); }
+    .dato-grupo { margin-bottom: 1rem; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🧠</div>
+      <span class="logo-text">Psych<span>AI</span></span>
+    </div>
+    <div class="header-right">
+      <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="container fade-in">
+    <div class="breadcrumb">
+      <a href="pacientes.html">Mis pacientes</a>
+      <span>/</span>
+      <a href="sesiones.html" id="linkPaciente"></a>
+      <span>/</span>
+      <strong id="fechaSesion"></strong>
+    </div>
+
+    <div class="loading-state" id="loadingState" style="display:flex;">
+      <div class="spinner"></div>
+      <p class="loading-text">Cargando sesión...</p>
+    </div>
+
+    <div id="contenido" style="display:none;">
+
+      <!-- Escalas -->
+      <div class="grid-2 mb-1">
+        <div class="card">
+          <div class="card-title">Escalas clínicas</div>
+          <div class="grid-2">
+            <div class="dato-grupo">
+              <div class="dato-label">PHQ-9</div>
+              <div class="dato-valor" id="phq9Val"></div>
+              <div class="text-muted text-sm" id="phq9Sev"></div>
+            </div>
+            <div class="dato-grupo">
+              <div class="dato-label">GAD-7</div>
+              <div class="dato-valor" id="gad7Val"></div>
+              <div class="text-muted text-sm" id="gad7Sev"></div>
+            </div>
+          </div>
+          <hr class="divider"/>
+          <div class="dato-grupo">
+            <div class="dato-label">Ideación suicida</div>
+            <div class="dato-valor" id="ideacionVal"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Evaluación clínica</div>
+          <div class="dato-grupo">
+            <div class="dato-label">Síntomas depresivos</div>
+            <div class="dato-valor" id="sintomasDepVal"></div>
+          </div>
+          <div class="dato-grupo">
+            <div class="dato-label">Síntomas ansiosos</div>
+            <div class="dato-valor" id="sintomasAnsVal"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Factores y resumen -->
+      <div class="card mb-1" style="margin-bottom:1.5rem;">
+        <div class="card-title">Factores clínicos</div>
+        <div class="grid-2">
+          <div class="dato-grupo">
+            <div class="dato-label">Factores precipitantes</div>
+            <div class="dato-valor" id="factPrecVal"></div>
+          </div>
+          <div class="dato-grupo">
+            <div class="dato-label">Factores protectores</div>
+            <div class="dato-valor" id="factProtVal"></div>
+          </div>
+        </div>
+        <hr class="divider"/>
+        <div class="dato-grupo">
+          <div class="dato-label">Resumen de sesión</div>
+          <div class="dato-valor" id="resumenVal"></div>
+        </div>
+      </div>
+
+      <!-- Informe IA -->
+      <div class="card">
+        <div class="card-title">Informe generado por IA</div>
+        <div class="result-body" id="informeVal"></div>
+        <div class="alert alert-warn mt-2">
+          <span class="alert-icon">⚠️</span>
+          <span>Este informe es <strong>orientativo</strong> y no reemplaza el diagnóstico clínico de un profesional certificado.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+  import '/js/supabase.js';
+
+  async function init() {
+    const session = await window.requireAuth();
+    if (!session) return;
+
+    const sesionId = sessionStorage.getItem('sesion_id');
+    const pacienteCodigo = sessionStorage.getItem('paciente_codigo');
+
+    if (!sesionId) { window.location.href = 'sesiones.html'; return; }
+
+    document.getElementById('linkPaciente').textContent = pacienteCodigo;
+
+    const { data, error } = await window._supabase
+      .from('sesiones')
+      .select('*')
+      .eq('id', sesionId)
+      .single();
+
+    document.getElementById('loadingState').style.display = 'none';
+
+    if (error || !data) {
+      window.location.href = 'sesiones.html';
+      return;
+    }
+
+    document.getElementById('fechaSesion').textContent =
+      new Date(data.fecha).toLocaleDateString('es-ES', { day:'2-digit', month:'long', year:'numeric' });
+
+    document.getElementById('phq9Val').textContent = data.phq9 ?? '—';
+    document.getElementById('phq9Sev').textContent = data.severidad_depresion ?? '';
+    document.getElementById('gad7Val').textContent = data.gad7 ?? '—';
+    document.getElementById('gad7Sev').textContent = data.severidad_ansiedad ?? '';
+    document.getElementById('ideacionVal').textContent = data.ideacion_suicida ?? '—';
+    document.getElementById('sintomasDepVal').textContent = data.sintomas_depresivos ?? '—';
+    document.getElementById('sintomasAnsVal').textContent = data.sintomas_ansiosos ?? '—';
+    document.getElementById('factPrecVal').textContent = data.factores_precipitantes ?? '—';
+    document.getElementById('factProtVal').textContent = data.factores_protectores ?? '—';
+    document.getElementById('resumenVal').textContent = data.resumen_sesion ?? '—';
+    document.getElementById('informeVal').textContent = data.informe_generado ?? 'No se generó informe para esta sesión.';
+
+    document.getElementById('contenido').style.display = 'block';
+  }
+
+  init();
+</script>
+</body>
+</html>

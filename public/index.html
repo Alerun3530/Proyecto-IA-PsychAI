@@ -3,467 +3,104 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PsychAI — Sistema de Evaluación Psicológica</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <title>PsychAI — Acceso</title>
+  <link rel="stylesheet" href="css/styles.css"/>
   <style>
-    :root {
-      --bg:#0d1117;--surface:#161b22;--surface2:#1c2333;--border:#2a3441;
-      --accent:#3fb950;--accent-soft:rgba(63,185,80,0.12);
-      --warn:#f0a500;--warn-soft:rgba(240,165,0,0.12);
-      --danger:#f85149;--danger-soft:rgba(248,81,73,0.12);
-      --blue:#58a6ff;--blue-soft:rgba(88,166,255,0.12);
-      --text:#e6edf3;--text-muted:#7d8590;--text-dim:#484f58;
-      --radius:12px;--radius-sm:8px;
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .login-wrap {
+      width: 100%; max-width: 400px; padding: 1rem;
+      position: relative; z-index: 1;
     }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;font-size:15px;line-height:1.6;min-height:100vh;}
-    body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.4;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");}
-    header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;}
-    .logo{display:flex;align-items:center;gap:10px;}
-    .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#3fb950,#1a7f37);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
-    .logo-text{font-family:"DM Serif Display",serif;font-size:1.3rem;letter-spacing:-0.02em;}
-    .logo-text span{color:var(--accent);}
-    .header-badge{font-size:11px;font-weight:500;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:20px;letter-spacing:0.05em;text-transform:uppercase;}
-    .container{max-width:1100px;margin:0 auto;padding:2.5rem 2rem;position:relative;z-index:1;}
-    .section-title{font-family:"DM Serif Display",serif;font-size:1.5rem;margin-bottom:0.25rem;}
-    .section-sub{font-size:13px;color:var(--text-muted);margin-bottom:1.75rem;}
-    .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;}
-    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
-    @media(max-width:900px){.grid{grid-template-columns:1fr 1fr;}}
-    @media(max-width:600px){.grid,.grid-2{grid-template-columns:1fr;}}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;transition:border-color 0.2s;}
-    .card:hover{border-color:#3a4555;}
-    .card-full{grid-column:1/-1;}
-    .card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:1rem;display:flex;align-items:center;gap:6px;}
-    .card-title::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);}
-    label{display:block;font-size:12px;font-weight:500;color:var(--text-muted);margin-bottom:6px;letter-spacing:0.03em;}
-    input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:"DM Sans",sans-serif;font-size:14px;padding:10px 14px;transition:border-color 0.2s,box-shadow 0.2s;outline:none;-webkit-appearance:none;}
-    input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
-    input::placeholder,textarea::placeholder{color:var(--text-dim);}
-    select option{background:var(--surface2);}
-    textarea{resize:vertical;line-height:1.7;}
-    .field{margin-bottom:1rem;}
-    .field:last-child{margin-bottom:0;}
-    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
-
-    /* RADIO BUTTONS IDEACIÓN */
-    .radio-group{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
-    .radio-option{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);cursor:pointer;transition:all 0.15s;background:var(--surface2);}
-    .radio-option:hover{border-color:#3a4555;}
-    .radio-option input[type="radio"]{width:auto;padding:0;background:none;border:none;accent-color:var(--accent);}
-    .radio-option.selected-none{border-color:var(--accent);background:var(--accent-soft);}
-    .radio-option.selected-pasiva{border-color:var(--blue);background:var(--blue-soft);}
-    .radio-option.selected-activa-sin-plan{border-color:var(--warn);background:var(--warn-soft);}
-    .radio-option.selected-activa-con-plan{border-color:var(--danger);background:var(--danger-soft);}
-    .radio-option.selected-activa-con-intencion{border-color:var(--danger);background:var(--danger-soft);}
-    .radio-label{font-size:13px;color:var(--text);}
-    .radio-desc{font-size:11px;color:var(--text-muted);margin-top:1px;}
-
-    /* BOTONES */
-    .btn-analyze{width:100%;padding:14px 24px;background:var(--accent);color:#0d1117;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:600;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.02em;margin-top:1.25rem;}
-    .btn-analyze:hover:not(:disabled){background:#4fc861;transform:translateY(-1px);box-shadow:0 4px 20px rgba(63,185,80,0.3);}
-    .btn-analyze:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-    .btn-clear{width:100%;padding:10px 24px;background:transparent;color:var(--text-muted);font-family:"DM Sans",sans-serif;font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;margin-top:8px;}
-    .btn-clear:hover{border-color:var(--danger);color:var(--danger);}
-
-    /* RESULTADO */
-    #resultado-section{display:none;}
-    .result-title{font-family:"DM Serif Display",serif;font-size:1.1rem;margin-bottom:1.25rem;}
-
-    /* MÉTRICAS */
-    .metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;}
-    @media(max-width:600px){.metrics-grid{grid-template-columns:1fr;}}
-    .metric-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;text-align:center;}
-    .metric-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.5rem;}
-    .metric-value{font-family:"DM Serif Display",serif;font-size:2rem;line-height:1;margin-bottom:0.25rem;}
-    .metric-level{font-size:12px;font-weight:500;}
-    .metric-bar{height:4px;border-radius:2px;background:var(--border);margin-top:0.75rem;overflow:hidden;}
-    .metric-bar-fill{height:100%;border-radius:2px;transition:width 0.8s ease;}
-
-    .color-minimo{color:var(--accent);}
-    .color-leve{color:var(--blue);}
-    .color-moderado{color:var(--warn);}
-    .color-severo{color:var(--danger);}
-    .bar-minimo{background:var(--accent);}
-    .bar-leve{background:var(--blue);}
-    .bar-moderado{background:var(--warn);}
-    .bar-severo{background:var(--danger);}
-
-    .riesgo-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:0.04em;}
-    .riesgo-ninguno{background:var(--accent-soft);color:var(--accent);border:1px solid rgba(63,185,80,0.3);}
-    .riesgo-pasivo{background:var(--blue-soft);color:var(--blue);border:1px solid rgba(88,166,255,0.3);}
-    .riesgo-activo{background:var(--warn-soft);color:var(--warn);border:1px solid rgba(240,165,0,0.3);}
-    .riesgo-alto{background:var(--danger-soft);color:var(--danger);border:1px solid rgba(248,81,73,0.3);}
-
-    .result-body{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.25rem;font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word;max-height:520px;overflow-y:auto;}
-    .result-body::-webkit-scrollbar{width:6px;}
-    .result-body::-webkit-scrollbar-track{background:transparent;}
-    .result-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-    .disclaimer{display:flex;gap:10px;background:var(--warn-soft);border:1px solid rgba(240,165,0,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-top:1rem;font-size:12px;color:var(--warn);line-height:1.5;}
-    .disclaimer-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
-    .loading-state{display:none;flex-direction:column;align-items:center;justify-content:center;padding:3rem;gap:1rem;}
-    .spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
-    @keyframes spin{to{transform:rotate(360deg);}}
-    .loading-text{font-size:13px;color:var(--text-muted);animation:pulse 1.5s ease-in-out infinite;}
-    @keyframes pulse{0%,100%{opacity:0.5;}50%{opacity:1;}}
-    .error-box{background:var(--danger-soft);border:1px solid rgba(248,81,73,0.3);border-radius:var(--radius-sm);padding:12px 16px;font-size:13px;color:var(--danger);margin-top:1rem;display:none;}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-    .fade-in{animation:fadeUp 0.35s ease forwards;}
-    .section-divider{height:1px;background:var(--border);margin:1.5rem 0;}
+    .login-logo {
+      display: flex; align-items: center; gap: 12px;
+      justify-content: center; margin-bottom: 2.5rem;
+    }
+    .login-logo .logo-icon { width: 42px; height: 42px; font-size: 20px; }
+    .login-logo .logo-text { font-size: 1.6rem; }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+    }
+    .login-title {
+      font-family: "DM Serif Display", serif;
+      font-size: 1.2rem; margin-bottom: 0.25rem;
+    }
+    .login-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 1.75rem; }
+    .login-footer {
+      text-align: center; font-size: 12px;
+      color: var(--text-dim); margin-top: 1.5rem;
+    }
   </style>
 </head>
 <body>
-
-<header>
-  <div class="logo">
-    <div class="logo-icon">🧠</div>
-    <span class="logo-text">Psych<span>AI</span></span>
-  </div>
-  <span class="header-badge">Prototipo Académico</span>
-</header>
-
-<div class="container">
-  <p class="section-title">Evaluación Psicológica Asistida</p>
-  <p class="section-sub">Complete todos los campos para generar un informe clínico detallado.</p>
-
-  <!-- FILA 1: Datos del paciente -->
-  <div class="grid-2" style="margin-bottom:1.25rem;">
-
-    <div class="card">
-      <div class="card-title">Datos del paciente</div>
-      <div class="field-row">
-        <div class="field">
-          <label>Nombre</label>
-          <input type="text" id="nombre" placeholder="Ej: Juan Pérez"/>
-        </div>
-        <div class="field">
-          <label>Edad</label>
-          <input type="number" id="edad" placeholder="Ej: 34" min="1" max="120"/>
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Género</label>
-          <select id="genero">
-            <option value="">Seleccionar...</option>
-            <option>Masculino</option>
-            <option>Femenino</option>
-            <option>No binario</option>
-            <option>Prefiere no decir</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Motivo de consulta</label>
-          <input type="text" id="motivo" placeholder="Ej: Tristeza, insomnio"/>
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>PHQ-9 <span style="color:var(--text-dim)">(0–27)</span></label>
-          <input type="number" id="phq9" placeholder="Ej: 14" min="0" max="27"/>
-        </div>
-        <div class="field">
-          <label>GAD-7 <span style="color:var(--text-dim)">(0–21)</span></label>
-          <input type="number" id="gad7" placeholder="Ej: 11" min="0" max="21"/>
-        </div>
-      </div>
+  <div class="login-wrap fade-in">
+    <div class="login-logo">
+      <div class="logo-icon">🧠</div>
+      <span class="logo-text">Psych<span>AI</span></span>
     </div>
 
-    <!-- IDEACIÓN SUICIDA -->
-    <div class="card">
-      <div class="card-title">Nivel de ideación suicida</div>
-      <div class="radio-group" id="ideacionGroup">
-        <label class="radio-option selected-none" data-value="ninguna">
-          <input type="radio" name="ideacion" value="ninguna" checked/>
-          <div>
-            <div class="radio-label">Sin ideación</div>
-            <div class="radio-desc">No refiere pensamientos de muerte</div>
-          </div>
-        </label>
-        <label class="radio-option" data-value="pasiva">
-          <input type="radio" name="ideacion" value="pasiva"/>
-          <div>
-            <div class="radio-label">Ideación pasiva</div>
-            <div class="radio-desc">"Estaría mejor muerto", sin intención activa</div>
-          </div>
-        </label>
-        <label class="radio-option" data-value="activa-sin-plan">
-          <input type="radio" name="ideacion" value="activa-sin-plan"/>
-          <div>
-            <div class="radio-label">Ideación activa sin plan</div>
-            <div class="radio-desc">Deseo de suicidarse sin método identificado</div>
-          </div>
-        </label>
-        <label class="radio-option" data-value="activa-con-plan">
-          <input type="radio" name="ideacion" value="activa-con-plan"/>
-          <div>
-            <div class="radio-label">Ideación activa con plan</div>
-            <div class="radio-desc">Método identificado, sin intención declarada</div>
-          </div>
-        </label>
-        <label class="radio-option" data-value="activa-con-intencion">
-          <input type="radio" name="ideacion" value="activa-con-intencion"/>
-          <div>
-            <div class="radio-label">Ideación activa con intención</div>
-            <div class="radio-desc">Plan + intención declarada de llevarlo a cabo</div>
-          </div>
-        </label>
-      </div>
-    </div>
-  </div>
+    <div class="login-card">
+      <p class="login-title">Acceso al sistema</p>
+      <p class="login-sub">Ingresa tus credenciales para continuar.</p>
 
-  <!-- FILA 2: Campos clínicos -->
-  <div class="grid" style="margin-bottom:1.25rem;">
-
-    <div class="card">
-      <div class="card-title">Síntomas depresivos</div>
       <div class="field">
-        <label>Descripción de síntomas observados</label>
-        <textarea id="sintomasDepresivos" style="min-height:120px;" placeholder="Ej: Tristeza persistente, anhedonia marcada, llanto frecuente, pérdida de peso de 4kg, insomnio de mantenimiento..."></textarea>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Síntomas ansiosos</div>
-      <div class="field">
-        <label>Descripción de síntomas observados</label>
-        <textarea id="sintomasAnsiosos" style="min-height:120px;" placeholder="Ej: Preocupación excesiva e incontrolable, tensión muscular, irritabilidad, episodios de palpitaciones y sensación de ahogo..."></textarea>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Factores clínicos</div>
-      <div class="field">
-        <label>Factores precipitantes</label>
-        <textarea id="factoresPrecipitantes" style="min-height:80px;" placeholder="Ej: Pérdida laboral hace 4 meses, separación conyugal reciente..."></textarea>
+        <label>Correo electrónico</label>
+        <input type="email" id="email" placeholder="tu@correo.com" autocomplete="email"/>
       </div>
       <div class="field">
-        <label>Factores protectores</label>
-        <textarea id="factoresProtectores" style="min-height:80px;" placeholder="Ej: Red de apoyo familiar activa, motivación para el tratamiento, ausencia de intentos previos..."></textarea>
-      </div>
-    </div>
-  </div>
-
-  <!-- FILA 3: Resumen narrativo -->
-  <div class="card card-full" style="margin-bottom:1.25rem;">
-    <div class="card-title">Resumen narrativo de la sesión</div>
-    <div class="field">
-      <label>Contexto general, antecedentes y observaciones adicionales</label>
-      <textarea id="resumen" style="min-height:140px;" placeholder="Describa el contexto general del caso, antecedentes relevantes, evolución temporal, comportamiento durante la sesión y cualquier observación clínica adicional que no esté cubierta en los campos anteriores..."></textarea>
-    </div>
-    <button class="btn-analyze" id="btnAnalizar" onclick="analizar()">
-      <span>⚡</span>
-      <span id="btnText">Generar Informe Clínico</span>
-    </button>
-    <button class="btn-clear" onclick="limpiar()">🗑 Limpiar formulario</button>
-    <div class="error-box" id="errorBox"></div>
-  </div>
-
-  <!-- RESULTADO -->
-  <div class="card card-full fade-in" id="resultado-section">
-    <div class="loading-state" id="loadingState">
-      <div class="spinner"></div>
-      <p class="loading-text">Generando informe clínico...</p>
-    </div>
-    <div id="resultContent" style="display:none;">
-      <p class="result-title">Informe de Evaluación Psicológica</p>
-
-      <!-- MÉTRICAS -->
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-label">Depresión · PHQ-9</div>
-          <div class="metric-value" id="metricDepVal">—</div>
-          <div class="metric-level" id="metricDepLevel">—</div>
-          <div class="metric-bar"><div class="metric-bar-fill" id="metricDepBar" style="width:0%"></div></div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Ansiedad · GAD-7</div>
-          <div class="metric-value" id="metricAnsVal">—</div>
-          <div class="metric-level" id="metricAnsLevel">—</div>
-          <div class="metric-bar"><div class="metric-bar-fill" id="metricAnsBar" style="width:0%"></div></div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Riesgo suicida</div>
-          <div style="margin-top:0.5rem;" id="metricRiesgo">—</div>
-        </div>
+        <label>Contraseña</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password"/>
       </div>
 
-      <div class="result-body" id="resultText"></div>
-      <div class="disclaimer">
-        <span class="disclaimer-icon">⚠️</span>
-        <span>Este resultado es <strong>orientativo</strong> y no reemplaza el diagnóstico clínico de un profesional de la salud mental certificado.</span>
-      </div>
+      <div class="error-box" id="errorBox"></div>
+
+      <button class="btn btn-primary btn-full mt-2" id="btnLogin" onclick="login()">
+        Iniciar sesión
+      </button>
     </div>
+
+    <p class="login-footer">Sistema de uso exclusivo para profesionales certificados.</p>
   </div>
 
-</div>
+  <script type="module" src="js/supabase.js"></script>
+  <script type="module">
+  import '/js/supabase.js';
 
-<script>
-  // Manejo visual de radio buttons
-  document.querySelectorAll('.radio-option input[type="radio"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-      document.querySelectorAll('.radio-option').forEach(opt => {
-        opt.className = 'radio-option';
-      });
-      const parent = radio.closest('.radio-option');
-      const val = radio.value;
-      if (val === 'ninguna') parent.classList.add('selected-none');
-      else if (val === 'pasiva') parent.classList.add('selected-pasiva');
-      else if (val === 'activa-sin-plan') parent.classList.add('selected-activa-sin-plan');
-      else if (val === 'activa-con-plan') parent.classList.add('selected-activa-con-plan');
-      else if (val === 'activa-con-intencion') parent.classList.add('selected-activa-con-intencion');
-    });
-  });
+  // Redirigir si ya hay sesión
+  const { data: { session } } = await window._supabase.auth.getSession();
+  if (session) window.location.href = 'pacientes.html';
 
-  function calcularSeveridad(phq9, gad7) {
-    let depNivel, depPct, depColor;
-    if (phq9 <= 4)       { depNivel = "Mínimo";               depColor = "minimo"; }
-    else if (phq9 <= 9)  { depNivel = "Leve";                 depColor = "leve"; }
-    else if (phq9 <= 14) { depNivel = "Moderado";             depColor = "moderado"; }
-    else if (phq9 <= 19) { depNivel = "Moderadamente Severo"; depColor = "severo"; }
-    else                 { depNivel = "Severo";                depColor = "severo"; }
-    depPct = Math.round((phq9 / 27) * 100);
-
-    let ansNivel, ansPct, ansColor;
-    if (gad7 <= 4)       { ansNivel = "Mínimo";   ansColor = "minimo"; }
-    else if (gad7 <= 9)  { ansNivel = "Leve";     ansColor = "leve"; }
-    else if (gad7 <= 14) { ansNivel = "Moderado"; ansColor = "moderado"; }
-    else                 { ansNivel = "Severo";    ansColor = "severo"; }
-    ansPct = Math.round((gad7 / 21) * 100);
-
-    return { depNivel, depPct, depColor, ansNivel, ansPct, ansColor };
-  }
-
-  function renderMetricas(phq9, gad7, ideacion) {
-    const { depNivel, depPct, depColor, ansNivel, ansPct, ansColor } = calcularSeveridad(phq9, gad7);
-
-    document.getElementById('metricDepVal').textContent = phq9 + '/27';
-    document.getElementById('metricDepVal').className = 'metric-value color-' + depColor;
-    document.getElementById('metricDepLevel').textContent = depNivel;
-    document.getElementById('metricDepLevel').className = 'metric-level color-' + depColor;
-    document.getElementById('metricDepBar').style.width = depPct + '%';
-    document.getElementById('metricDepBar').className = 'metric-bar-fill bar-' + depColor;
-
-    document.getElementById('metricAnsVal').textContent = gad7 + '/21';
-    document.getElementById('metricAnsVal').className = 'metric-value color-' + ansColor;
-    document.getElementById('metricAnsLevel').textContent = ansNivel;
-    document.getElementById('metricAnsLevel').className = 'metric-level color-' + ansColor;
-    document.getElementById('metricAnsBar').style.width = ansPct + '%';
-    document.getElementById('metricAnsBar').className = 'metric-bar-fill bar-' + ansColor;
-
-    const riesgoMap = {
-      'ninguna':           ['Sin ideación detectada', 'riesgo-ninguno'],
-      'pasiva':            ['Ideación Pasiva', 'riesgo-pasivo'],
-      'activa-sin-plan':   ['Ideación Activa Sin Plan', 'riesgo-activo'],
-      'activa-con-plan':   ['Ideación Activa Con Plan', 'riesgo-alto'],
-      'activa-con-intencion': ['Ideación Activa Con Intención', 'riesgo-alto'],
-    };
-    const [label, cls] = riesgoMap[ideacion] || ['—', ''];
-    document.getElementById('metricRiesgo').innerHTML = `<span class="riesgo-badge ${cls}">${label}</span>`;
-  }
-
-  async function analizar() {
-    const nombre   = document.getElementById('nombre').value.trim();
-    const edad     = document.getElementById('edad').value.trim();
-    const genero   = document.getElementById('genero').value;
-    const motivo   = document.getElementById('motivo').value.trim();
-    const phq9     = parseInt(document.getElementById('phq9').value) || 0;
-    const gad7     = parseInt(document.getElementById('gad7').value) || 0;
-    const ideacion = document.querySelector('input[name="ideacion"]:checked')?.value || 'ninguna';
-    const sintomasDepresivos  = document.getElementById('sintomasDepresivos').value.trim();
-    const sintomasAnsiosos    = document.getElementById('sintomasAnsiosos').value.trim();
-    const factoresPrecipitantes = document.getElementById('factoresPrecipitantes').value.trim();
-    const factoresProtectores   = document.getElementById('factoresProtectores').value.trim();
-    const resumen = document.getElementById('resumen').value.trim();
+  window.login = async () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('btnLogin');
 
     document.getElementById('errorBox').style.display = 'none';
-    if (!resumen && !sintomasDepresivos) {
-      showError('Complete al menos el resumen narrativo o los síntomas depresivos.');
-      return;
-    }
+    if (!email || !password) { showError('Completa todos los campos.'); return; }
 
-    const { depNivel, depPct, ansNivel, ansPct } = calcularSeveridad(phq9, gad7);
-
-    const btn = document.getElementById('btnAnalizar');
     btn.disabled = true;
-    document.getElementById('btnText').textContent = 'Generando informe...';
+    btn.textContent = 'Verificando...';
 
-    const seccion = document.getElementById('resultado-section');
-    seccion.style.display = 'block';
-    document.getElementById('loadingState').style.display = 'flex';
-    document.getElementById('resultContent').style.display = 'none';
-    seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const { error } = await window._supabase.auth.signInWithPassword({ email, password });
 
-    // Payload con campos separados — n8n recibe todo estructurado
-    const payload = {
-      paciente: { nombre, edad, genero, motivo },
-      escalas: {
-        phq9, gad7,
-        severidad_depresion: depNivel,
-        porcentaje_depresion: depPct,
-        severidad_ansiedad: ansNivel,
-        porcentaje_ansiedad: ansPct,
-      },
-      evaluacion_clinica: {
-        ideacion_suicida: ideacion,
-        sintomas_depresivos: sintomasDepresivos,
-        sintomas_ansiosos: sintomasAnsiosos,
-        factores_precipitantes: factoresPrecipitantes,
-        factores_protectores: factoresProtectores,
-      },
-      resumen_sesion: resumen,
-      // chatInput para compatibilidad con el flujo actual de n8n
-      chatInput: `EVALUACIÓN PSICOLÓGICA\n\nPaciente: ${nombre || 'No especificado'}, ${edad || '?'} años, ${genero || 'No especificado'}\nMotivo: ${motivo}\nPHQ-9: ${phq9}/27 (${depNivel} — ${depPct}%)\nGAD-7: ${gad7}/21 (${ansNivel} — ${ansPct}%)\nIdeación suicida: ${ideacion}\n\nSíntomas depresivos: ${sintomasDepresivos}\nSíntomas ansiosos: ${sintomasAnsiosos}\nFactores precipitantes: ${factoresPrecipitantes}\nFactores protectores: ${factoresProtectores}\n\nResumen de sesión:\n${resumen}`
-    };
-
-    try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || `Error ${response.status}`);
-
-      const textoRespuesta =
-        data.output || data.text || data.response || data.message ||
-        (Array.isArray(data) && (data[0]?.output || data[0]?.text || data[0]?.message)) ||
-        JSON.stringify(data, null, 2);
-
-      renderMetricas(phq9, gad7, ideacion);
-      document.getElementById('resultText').textContent = textoRespuesta;
-      document.getElementById('loadingState').style.display = 'none';
-      document.getElementById('resultContent').style.display = 'block';
-
-    } catch (err) {
-      document.getElementById('loadingState').style.display = 'none';
-      seccion.style.display = 'none';
-      showError(err.message);
-    } finally {
+    if (error) {
+      showError('Credenciales incorrectas.');
       btn.disabled = false;
-      document.getElementById('btnText').textContent = 'Generar Informe Clínico';
+      btn.textContent = 'Iniciar sesión';
+    } else {
+      window.location.href = 'pacientes.html';
     }
-  }
-
-  function limpiar() {
-    ['nombre','edad','motivo','phq9','gad7','sintomasDepresivos',
-     'sintomasAnsiosos','factoresPrecipitantes','factoresProtectores','resumen']
-      .forEach(id => document.getElementById(id).value = '');
-    document.getElementById('genero').value = '';
-    document.querySelector('input[name="ideacion"][value="ninguna"]').checked = true;
-    document.querySelectorAll('.radio-option').forEach(o => o.className = 'radio-option');
-    document.querySelector('.radio-option[data-value="ninguna"]').classList.add('selected-none');
-    document.getElementById('errorBox').style.display = 'none';
-    document.getElementById('resultado-section').style.display = 'none';
-    document.getElementById('resultContent').style.display = 'none';
-  }
+  };
 
   function showError(msg) {
     const box = document.getElementById('errorBox');
     box.textContent = '⚠️ ' + msg;
     box.style.display = 'block';
   }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') window.login(); });
 </script>
 </body>
 </html>

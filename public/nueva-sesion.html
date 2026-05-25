@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PsychAI — Nueva Sesión</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      .paciente-banner {
+        background: var(--accent-soft);
+        border: 1px solid rgba(63, 185, 80, 0.25);
+        border-radius: var(--radius-sm);
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 1.75rem;
+      }
+      .paciente-banner strong {
+        color: var(--text);
+      }
+      .ideacion-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .ideacion-option {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 13px;
+      }
+      .ideacion-option:hover {
+        border-color: var(--accent);
+      }
+      .ideacion-option.selected {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .ideacion-option.selected-danger {
+        border-color: var(--danger);
+        background: var(--danger-soft);
+      }
+      .ideacion-option strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 2px;
+      }
+      .ideacion-option span {
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+      textarea {
+        min-height: 140px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <div class="logo-icon">🧠</div>
+        <span class="logo-text">Psych<span>AI</span></span>
+      </div>
+      <div class="header-right">
+        <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <div class="container fade-in">
+      <div class="breadcrumb">
+        <a href="pacientes.html">Mis pacientes</a>
+        <span>/</span>
+        <a href="sesiones.html" id="linkPaciente"></a>
+        <span>/</span>
+        <strong>Nueva sesión</strong>
+      </div>
+
+      <!-- Banner paciente -->
+      <div class="paciente-banner">
+        <span>🔒</span>
+        Sesión para paciente:
+        <span class="patient-code" id="codigoPaciente"></span>
+        <span class="text-muted"
+          >— La IA recibirá únicamente este código como identificador.</span
+        >
+      </div>
+
+      <div class="grid-2">
+        <!-- Escalas -->
+        <div class="card">
+          <div class="card-title">Escalas clínicas</div>
+          <div class="field-row">
+            <div class="field">
+              <label
+                >PHQ-9 <span style="color: var(--text-dim)">(0–27)</span></label
+              >
+              <input
+                type="number"
+                id="phq9"
+                placeholder="Ej: 14"
+                min="0"
+                max="27"
+              />
+            </div>
+            <div class="field">
+              <label
+                >GAD-7 <span style="color: var(--text-dim)">(0–21)</span></label
+              >
+              <input
+                type="number"
+                id="gad7"
+                placeholder="Ej: 11"
+                min="0"
+                max="21"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Ideación suicida</label>
+            <div class="ideacion-grid">
+              <div
+                class="ideacion-option"
+                data-valor="Sin ideación"
+                onclick="seleccionarIdeacion(this, false)"
+              >
+                <strong>Sin ideación</strong>
+                <span>No refiere pensamientos de muerte</span>
+              </div>
+              <div
+                class="ideacion-option"
+                data-valor="Ideación pasiva"
+                onclick="seleccionarIdeacion(this, false)"
+              >
+                <strong>Ideación pasiva</strong>
+                <span>"Estaría mejor muerto", sin intención activa</span>
+              </div>
+              <div
+                class="ideacion-option"
+                data-valor="Ideación activa sin plan"
+                onclick="seleccionarIdeacion(this, true)"
+              >
+                <strong>Ideación activa sin plan</strong>
+                <span>Deseo de suicidarse sin método identificado</span>
+              </div>
+              <div
+                class="ideacion-option"
+                data-valor="Ideación activa con plan"
+                onclick="seleccionarIdeacion(this, true)"
+              >
+                <strong>Ideación activa con plan</strong>
+                <span>Método identificado, sin intención declarada</span>
+              </div>
+              <div
+                class="ideacion-option"
+                data-valor="Ideación activa con intención"
+                onclick="seleccionarIdeacion(this, true)"
+              >
+                <strong>Ideación activa con intención</strong>
+                <span>Plan + intención declarada de llevarlo a cabo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Síntomas y factores -->
+        <div class="card">
+          <div class="card-title">Evaluación clínica</div>
+          <div class="field">
+            <label>Síntomas depresivos</label>
+            <textarea
+              id="sintomasDepresivos"
+              placeholder="Describe los síntomas depresivos observados..."
+            ></textarea>
+          </div>
+          <div class="field">
+            <label>Síntomas ansiosos</label>
+            <textarea
+              id="sintomasAnsiosos"
+              placeholder="Describe los síntomas ansiosos observados..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Factores -->
+        <div class="card">
+          <div class="card-title">Factores clínicos</div>
+          <div class="field">
+            <label>Factores precipitantes</label>
+            <textarea
+              id="factoresPrecipitantes"
+              placeholder="Eventos o circunstancias que desencadenaron el cuadro..."
+            ></textarea>
+          </div>
+          <div class="field">
+            <label>Factores protectores</label>
+            <textarea
+              id="factoresProtectores"
+              placeholder="Elementos que reducen el riesgo y favorecen la recuperación..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Resumen narrativo -->
+        <div class="card" style="display: flex; flex-direction: column">
+          <div class="card-title">Resumen narrativo de la sesión</div>
+          <div class="field" style="flex: 1">
+            <label
+              >Contexto general, antecedentes y observaciones adicionales</label
+            >
+            <textarea
+              id="resumen"
+              style="min-height: 200px"
+              placeholder="Describe el contexto general, antecedentes relevantes y observaciones adicionales..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="col-full">
+          <button
+            class="btn btn-primary btn-full"
+            id="btnAnalizar"
+            onclick="analizar()"
+          >
+            <span>⚡</span> <span id="btnText">Generar informe con IA</span>
+          </button>
+          <button class="btn btn-danger btn-full mt-1" onclick="limpiar()">
+            🗑 Limpiar formulario
+          </button>
+          <div class="error-box" id="errorBox"></div>
+        </div>
+
+        <!-- Resultado -->
+        <div
+          class="card col-full fade-in"
+          id="resultadoSection"
+          style="display: none"
+        >
+          <div class="loading-state" id="loadingState">
+            <div class="spinner"></div>
+            <p class="loading-text">Procesando análisis clínico...</p>
+          </div>
+          <div id="resultContent" style="display: none">
+            <div class="flex-between mb-1">
+              <p
+                style="
+                  font-family: &quot;DM Serif Display&quot;, serif;
+                  font-size: 1.1rem;
+                "
+              >
+                Reporte de Evaluación
+              </p>
+              <div class="flex-center gap-2">
+                <span
+                  class="badge badge-green"
+                  id="guardadoBadge"
+                  style="display: none"
+                  >✓ Guardado</span
+                >
+                <button
+                  class="btn btn-secondary btn-sm"
+                  id="btnGuardar"
+                  style="display: none"
+                  onclick="guardarSesion()"
+                >
+                  💾 Guardar sesión
+                </button>
+              </div>
+            </div>
+            <div class="result-body" id="resultText"></div>
+            <div class="alert alert-warn mt-2">
+              <span class="alert-icon">⚠️</span>
+              <span
+                >Este resultado es <strong>orientativo</strong> y no reemplaza
+                el diagnóstico clínico de un profesional certificado.</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import "/js/supabase.js";
+
+      const session = await window.requireAuth();
+      if (!session) throw new Error("No session");
+
+      const pacienteId = sessionStorage.getItem("paciente_id");
+      const pacienteCodigo = sessionStorage.getItem("paciente_codigo");
+      // Cargar datos del paciente
+
+      if (!pacienteId) {
+        window.location.href = "pacientes.html";
+      }
+
+      const { data: pacienteData } = await window._supabase
+        .from("pacientes")
+        .select("edad, genero")
+        .eq("id", pacienteId)
+        .single();
+
+      const pacienteEdad = pacienteData?.edad ?? null;
+      const pacienteGenero = pacienteData?.genero ?? null;
+
+      document.getElementById("codigoPaciente").textContent = pacienteCodigo;
+      document.getElementById("linkPaciente").textContent = pacienteCodigo;
+
+      let ideacionSeleccionada = "";
+
+      window.seleccionarIdeacion = (el, esCritica) => {
+        document.querySelectorAll(".ideacion-option").forEach((o) => {
+          o.classList.remove("selected", "selected-danger");
+        });
+        el.classList.add(esCritica ? "selected-danger" : "selected");
+        ideacionSeleccionada = el.dataset.valor;
+      };
+
+      window.limpiar = () => {
+        [
+          "phq9",
+          "gad7",
+          "sintomasDepresivos",
+          "sintomasAnsiosos",
+          "factoresPrecipitantes",
+          "factoresProtectores",
+          "resumen",
+        ].forEach((id) => {
+          document.getElementById(id).value = "";
+        });
+        document.querySelectorAll(".ideacion-option").forEach((o) => {
+          o.classList.remove("selected", "selected-danger");
+        });
+        ideacionSeleccionada = "";
+        document.getElementById("errorBox").style.display = "none";
+        document.getElementById("resultadoSection").style.display = "none";
+      };
+
+      // Calcula severidad PHQ-9
+      function severidadPhq(v) {
+        if (v <= 4) return "Mínimo";
+        if (v <= 9) return "Leve";
+        if (v <= 14) return "Moderado";
+        if (v <= 19) return "Moderadamente severo";
+        return "Severo";
+      }
+
+      // Calcula severidad GAD-7
+      function severidadGad(v) {
+        if (v <= 4) return "Mínimo";
+        if (v <= 9) return "Leve";
+        if (v <= 14) return "Moderado";
+        return "Severo";
+      }
+
+      window.analizar = async () => {
+        const phq9 = parseInt(document.getElementById("phq9").value);
+        const gad7 = parseInt(document.getElementById("gad7").value);
+        const sintomasDepresivos = document
+          .getElementById("sintomasDepresivos")
+          .value.trim();
+        const sintomasAnsiosos = document
+          .getElementById("sintomasAnsiosos")
+          .value.trim();
+        const factoresPrecipitantes = document
+          .getElementById("factoresPrecipitantes")
+          .value.trim();
+        const factoresProtectores = document
+          .getElementById("factoresProtectores")
+          .value.trim();
+        const resumen = document.getElementById("resumen").value.trim();
+
+        document.getElementById("errorBox").style.display = "none";
+
+        if (!resumen) {
+          showError("El resumen narrativo es obligatorio.");
+          return;
+        }
+        if (!ideacionSeleccionada) {
+          showError("Selecciona el nivel de ideación suicida.");
+          return;
+        }
+
+        const sevDep = severidadPhq(phq9);
+        const sevAns = severidadGad(gad7);
+
+        const payload = {
+          paciente: {
+            paciente_id: pacienteId,
+            nombre: pacienteCodigo,
+            edad: pacienteEdad,
+            genero: pacienteGenero,
+            motivo: resumen.substring(0, 80),
+          },
+          escalas: {
+            phq9,
+            gad7,
+            severidad_depresion: sevDep,
+            severidad_ansiedad: sevAns,
+            porcentaje_depresion: Math.round((phq9 / 27) * 100),
+            porcentaje_ansiedad: Math.round((gad7 / 21) * 100),
+          },
+          evaluacion_clinica: {
+            ideacion_suicida: ideacionSeleccionada,
+            sintomas_depresivos: sintomasDepresivos,
+            sintomas_ansiosos: sintomasAnsiosos,
+            factores_precipitantes: factoresPrecipitantes,
+            factores_protectores: factoresProtectores,
+          },
+          resumen_sesion: resumen,
+        };
+
+        const btn = document.getElementById("btnAnalizar");
+        btn.disabled = true;
+        document.getElementById("btnText").textContent = "Analizando...";
+
+        const seccion = document.getElementById("resultadoSection");
+        seccion.style.display = "block";
+        document.getElementById("loadingState").style.display = "flex";
+        document.getElementById("resultContent").style.display = "none";
+        seccion.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        try {
+          const response = await fetch("/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json();
+          if (!response.ok)
+            throw new Error(data.error || `Error ${response.status}`);
+
+          const informe =
+            data.output ||
+            data.text ||
+            data.response ||
+            data.message ||
+            (Array.isArray(data) &&
+              (data[0]?.output || data[0]?.text || data[0]?.message)) ||
+            JSON.stringify(data, null, 2);
+
+          document.getElementById("resultText").textContent = informe;
+          document.getElementById("loadingState").style.display = "none";
+          document.getElementById("resultContent").style.display = "block";
+
+          // Guardar sesión en Supabase
+          // Guardar datos para el botón manual
+          window._sesionPendiente = {
+            paciente_id: pacienteId,
+            phq9,
+            gad7,
+            severidad_depresion: sevDep,
+            severidad_ansiedad: sevAns,
+            ideacion_suicida: ideacionSeleccionada,
+            sintomas_depresivos: sintomasDepresivos,
+            sintomas_ansiosos: sintomasAnsiosos,
+            factores_precipitantes: factoresPrecipitantes,
+            factores_protectores: factoresProtectores,
+            resumen_sesion: resumen,
+            informe_generado: informe,
+          };
+          document.getElementById("btnGuardar").style.display = "flex";
+        } catch (err) {
+          document.getElementById("loadingState").style.display = "none";
+          seccion.style.display = "none";
+          showError(err.message);
+        } finally {
+          btn.disabled = false;
+          document.getElementById("btnText").textContent =
+            "Generar informe con IA";
+        }
+      };
+
+      function showError(msg) {
+        const box = document.getElementById("errorBox");
+        box.textContent = "⚠️ " + msg;
+        box.style.display = "block";
+      }
+
+      window.guardarSesion = async () => {
+        const btn = document.getElementById("btnGuardar");
+        btn.disabled = true;
+        btn.textContent = "Guardando...";
+
+        const { error } = await window._supabase
+          .from("sesiones")
+          .insert(window._sesionPendiente);
+
+        if (error) {
+          btn.disabled = false;
+          btn.textContent = "💾 Guardar sesión";
+          showError("Error al guardar. Intenta de nuevo.");
+        } else {
+          btn.textContent = "✓ Sesión guardada";
+          document.getElementById("guardadoBadge").style.display =
+            "inline-flex";
+        }
+      };
+    </script>
+  </body>
+</html>

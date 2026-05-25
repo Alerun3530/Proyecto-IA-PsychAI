@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PsychAI — Mis Pacientes</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🧠</div>
+      <span class="logo-text">Psych<span>AI</span></span>
+    </div>
+    <div class="header-right">
+      <span class="header-user">Bienvenido, <strong id="userEmail"></strong></span>
+      <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="container fade-in">
+    <div class="flex-between mb-1">
+      <div>
+        <p class="page-title">Mis Pacientes</p>
+        <p class="page-sub">Selecciona un paciente o crea uno nuevo.</p>
+      </div>
+      <button class="btn btn-primary" onclick="abrirModal()">+ Nuevo paciente</button>
+    </div>
+
+    <div class="card">
+      <div class="loading-state" id="loadingState" style="display:flex;">
+        <div class="spinner"></div>
+        <p class="loading-text">Cargando pacientes...</p>
+      </div>
+
+      <div id="tablaWrap" style="display:none;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Edad</th>
+                <th>Género</th>
+                <th>Registrado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tablaPacientes"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="emptyState" style="display:none;">
+          <div class="empty-icon">👤</div>
+          <p>No tienes pacientes registrados aún.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal nuevo paciente -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <p class="modal-title">Nuevo Paciente</p>
+      <div class="field">
+        <label>Nombre real <span class="text-muted text-sm">(solo visible para ti)</span></label>
+        <input type="text" id="nombreReal" placeholder="Nombre completo del paciente"/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Edad</label>
+          <input type="number" id="edadPac" placeholder="Ej: 32" min="1" max="120"/>
+        </div>
+        <div class="field">
+          <label>Género</label>
+          <select id="generoPac">
+            <option value="">Seleccionar...</option>
+            <option>Masculino</option>
+            <option>Femenino</option>
+            <option>No binario</option>
+            <option>Prefiere no decir</option>
+          </select>
+        </div>
+      </div>
+      <div class="error-box" id="modalError"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" id="btnCrear" onclick="crearPaciente()">Crear paciente</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import '/js/supabase.js';
+
+    const session = await window.requireAuth();
+    if (!session) throw new Error('No session');
+
+    document.getElementById('userEmail').textContent = session.user.email;
+
+    await cargarPacientes();
+
+    async function cargarPacientes() {
+      const { data, error } = await window._supabase
+        .from('pacientes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('tablaWrap').style.display = 'block';
+
+      if (error || !data?.length) {
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+      }
+
+      const tbody = document.getElementById('tablaPacientes');
+      tbody.innerHTML = data.map(p => `
+        <tr class="tr-clickable" onclick="irASesiones('${p.id}', '${p.nombre_anonimo}')">
+          <td><span class="patient-code">${p.nombre_anonimo}</span></td>
+          <td>${p.edad ?? '—'}</td>
+          <td>${p.genero ?? '—'}</td>
+          <td class="text-muted">${new Date(p.created_at).toLocaleDateString('es-ES')}</td>
+          <td><span class="btn btn-secondary btn-sm">Ver sesiones →</span></td>
+        </tr>
+      `).join('');
+    }
+
+    window.irASesiones = (id, codigo) => {
+      sessionStorage.setItem('paciente_id', id);
+      sessionStorage.setItem('paciente_codigo', codigo);
+      window.location.href = 'sesiones.html';
+    };
+
+    window.abrirModal = () => {
+      document.getElementById('modalOverlay').classList.add('open');
+      document.getElementById('nombreReal').focus();
+    };
+
+    window.cerrarModal = () => {
+      document.getElementById('modalOverlay').classList.remove('open');
+      document.getElementById('modalError').style.display = 'none';
+      document.getElementById('nombreReal').value = '';
+      document.getElementById('edadPac').value = '';
+      document.getElementById('generoPac').value = '';
+    };
+
+    window.crearPaciente = async () => {
+      const nombreReal = document.getElementById('nombreReal').value.trim();
+      const edad = document.getElementById('edadPac').value;
+      const genero = document.getElementById('generoPac').value;
+      const btn = document.getElementById('btnCrear');
+      const errorBox = document.getElementById('modalError');
+
+      errorBox.style.display = 'none';
+      if (!nombreReal) { mostrarErrorModal('El nombre es obligatorio.'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Creando...';
+
+      const nombre_anonimo = window.generarCodigoAnonimo();
+
+      const { error } = await window._supabase.from('pacientes').insert({
+        psicologo_id: session.user.id,
+        nombre_real: nombreReal,
+        nombre_anonimo,
+        edad: edad || null,
+        genero: genero || null,
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Crear paciente';
+
+      if (error) { mostrarErrorModal('Error al crear el paciente. Intenta de nuevo.'); return; }
+
+      cerrarModal();
+      await cargarPacientes();
+    };
+
+    function mostrarErrorModal(msg) {
+      const box = document.getElementById('modalError');
+      box.textContent = '⚠️ ' + msg;
+      box.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

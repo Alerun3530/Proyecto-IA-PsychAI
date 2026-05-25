@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PsychAI — Sesiones</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🧠</div>
+      <span class="logo-text">Psych<span>AI</span></span>
+    </div>
+    <div class="header-right">
+      <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="container fade-in">
+    <div class="breadcrumb">
+      <a href="pacientes.html">Mis pacientes</a>
+      <span>/</span>
+      <strong id="codigoPaciente"></strong>
+    </div>
+
+    <div class="flex-between mb-1">
+      <div>
+        <p class="page-title">Sesiones</p>
+        <p class="page-sub">Historial de sesiones del paciente.</p>
+      </div>
+      <button class="btn btn-primary" onclick="nuevaSesion()">+ Nueva sesión</button>
+    </div>
+
+    <!-- Stats rápidos -->
+    <div class="grid-3 mb-1" id="statsWrap" style="display:none;">
+      <div class="stat-card">
+        <div class="stat-label">Total sesiones</div>
+        <div class="stat-value" id="statTotal">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Último PHQ-9</div>
+        <div class="stat-value" id="statPhq">—</div>
+        <div class="stat-sub" id="statPhqSev"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Último GAD-7</div>
+        <div class="stat-value" id="statGad">—</div>
+        <div class="stat-sub" id="statGadSev"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="loading-state" id="loadingState" style="display:flex;">
+        <div class="spinner"></div>
+        <p class="loading-text">Cargando sesiones...</p>
+      </div>
+
+      <div id="tablaWrap" style="display:none;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th>PHQ-9</th>
+                <th>GAD-7</th>
+                <th>Ideación</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tablaSesiones"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="emptyState" style="display:none;">
+          <div class="empty-icon">📋</div>
+          <p>No hay sesiones registradas para este paciente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import '/js/supabase.js';
+
+    const session = await window.requireAuth();
+    if (!session) throw new Error('No session');
+
+    const pacienteId = sessionStorage.getItem('paciente_id');
+    const pacienteCodigo = sessionStorage.getItem('paciente_codigo');
+
+    if (!pacienteId) { window.location.href = 'pacientes.html'; }
+
+    document.getElementById('codigoPaciente').textContent = pacienteCodigo;
+
+    await cargarSesiones();
+
+    async function cargarSesiones() {
+      const { data, error } = await window._supabase
+        .from('sesiones')
+        .select('*')
+        .eq('paciente_id', pacienteId)
+        .order('fecha', { ascending: false });
+
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('tablaWrap').style.display = 'block';
+
+      if (error || !data?.length) {
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+      }
+
+      // Stats
+      document.getElementById('statsWrap').style.display = 'grid';
+      document.getElementById('statTotal').textContent = data.length;
+      document.getElementById('statPhq').textContent = data[0].phq9 ?? '—';
+      document.getElementById('statPhqSev').textContent = data[0].severidad_depresion ?? '';
+      document.getElementById('statGad').textContent = data[0].gad7 ?? '—';
+      document.getElementById('statGadSev').textContent = data[0].severidad_ansiedad ?? '';
+
+      const tbody = document.getElementById('tablaSesiones');
+      tbody.innerHTML = data.map((s, i) => `
+        <tr class="tr-clickable" onclick="irADetalle('${s.id}')">
+          <td class="text-muted">${data.length - i}</td>
+          <td>${new Date(s.fecha).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' })}</td>
+          <td>
+            <span class="badge ${badgePhq(s.phq9)}">${s.phq9 ?? '—'}</span>
+          </td>
+          <td>
+            <span class="badge ${badgeGad(s.gad7)}">${s.gad7 ?? '—'}</span>
+          </td>
+          <td class="text-muted text-sm">${s.ideacion_suicida ?? '—'}</td>
+          <td><span class="btn btn-secondary btn-sm">Ver →</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function badgePhq(v) {
+      if (v === null || v === undefined) return 'badge-muted';
+      if (v <= 4) return 'badge-green';
+      if (v <= 9) return 'badge-info';
+      if (v <= 14) return 'badge-warn';
+      return 'badge-danger';
+    }
+
+    function badgeGad(v) {
+      if (v === null || v === undefined) return 'badge-muted';
+      if (v <= 4) return 'badge-green';
+      if (v <= 9) return 'badge-info';
+      if (v <= 14) return 'badge-warn';
+      return 'badge-danger';
+    }
+
+    window.irADetalle = (id) => {
+      sessionStorage.setItem('sesion_id', id);
+      window.location.href = 'detalle.html';
+    };
+
+    window.nuevaSesion = () => {
+      window.location.href = 'nueva-sesion.html';
+    };
+  </script>
+</body>
+</html>
