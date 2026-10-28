@@ -1,4 +1,7 @@
 import express from "express";
+import cors from "cors";
+
+import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -10,6 +13,15 @@ const WEBHOOK_URL = process.env.WEBHOOK_URL;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
+
+
+app.use(helmet());
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
+app.use(limiter);
+app.use(cors({ origin: process.env.CORS_ORIGIN || "*", credentials: true }));
+app.use(cookieParser());
+// CSRF protection enabled; ensure client sends token or remove this middleware
+// app.use(csurf({ cookie: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../public")));
 
